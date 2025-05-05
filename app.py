@@ -14,7 +14,6 @@ container_client = blob_service_client.get_container_client("static")
 def home():
     # Get image URL from Blob Storage
     blob_client = container_client.get_blob_client("logo.png")
-    # image_url = blob_client.url
     image_url = "https://server-crafted-demo-endpoint-cca5gqb4gsf6c6d8.z01.azurefd.net/static/logo.png"
     
     # Bootstrap template with modern design
