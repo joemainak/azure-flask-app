@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string
+from flask import Flask, render_template_string, jsonify
 from azure.storage.blob import BlobServiceClient
 import os
 
@@ -13,12 +13,9 @@ container_client = blob_service_client.get_container_client("static")
 def home():
     # Get image URL from Blob Storage without query parameters
     blob_client = container_client.get_blob_client("logo.png")
-    # Explicitly construct the URL to avoid unexpected query parameters
     image_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/static/logo.png"
-
-    print(image_url)
     
-    # Bootstrap template (unchanged, using your provided HTML)
+    # Bootstrap template
     html = """
     <!DOCTYPE html>
     <html lang="en">
@@ -130,6 +127,18 @@ def home():
     </html>
     """
     return render_template_string(html, image_url=image_url)
+
+@app.route('/health')
+def health():
+    health_status = {"status": "healthy", "details": {}}
+    try:
+        # Check Blob Storage connectivity by listing blobs (use maxresults for newer SDK versions)
+        container_client.list_blobs(maxresults=1).next()
+        health_status["details"]["blob_storage"] = "connected"
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["details"]["blob_storage"] = f"failed: {str(e)}"
+    return jsonify(health_status)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
