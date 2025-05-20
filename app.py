@@ -4,19 +4,21 @@ import os
 
 app = Flask(__name__)
 
-# Azure Blob Storage connection (replace with your connection string later)
+# Azure Blob Storage connection
 BLOB_CONNECTION_STRING = os.getenv("BLOB_CONNECTION_STRING", "your-connection-string")
 blob_service_client = BlobServiceClient.from_connection_string(BLOB_CONNECTION_STRING)
 container_client = blob_service_client.get_container_client("static")
 
-
 @app.route('/')
 def home():
-    # Get image URL from Blob Storage
+    # Get image URL from Blob Storage without query parameters
     blob_client = container_client.get_blob_client("logo.png")
-    image_url = blob_client.url
+    # Explicitly construct the URL to avoid unexpected query parameters
+    image_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/static/logo.png"
+
+    print(image_url)
     
-    # Bootstrap template with modern design
+    # Bootstrap template (unchanged, using your provided HTML)
     html = """
     <!DOCTYPE html>
     <html lang="en">
@@ -24,54 +26,18 @@ def home():
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Azure Web App</title>
-        <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Custom CSS -->
         <style>
-            .hero-section {
-                background: linear-gradient(135deg, #0078D4 0%, #004E8C 100%);
-                color: white;
-                padding: 4rem 0;
-                border-radius: 0 0 2rem 2rem;
-                margin-bottom: 2rem;
-            }
-            .logo-container {
-                background-color: white;
-                padding: 1.5rem;
-                border-radius: 1rem;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-                margin-top: 2rem;
-                transition: transform 0.3s;
-            }
-            .logo-container:hover {
-                transform: translateY(-5px);
-            }
-            .feature-card {
-                border: none;
-                border-radius: 1rem;
-                padding: 1.5rem;
-                height: 100%;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-                transition: all 0.3s;
-            }
-            .feature-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            }
-            .azure-icon {
-                color: #0078D4;
-                font-size: 2.5rem;
-                margin-bottom: 1rem;
-            }
-            footer {
-                background-color: #f8f9fa;
-                padding: 2rem 0;
-                margin-top: 3rem;
-            }
+            .hero-section { background: linear-gradient(135deg, #0078D4 0%, #004E8C 100%); color: white; padding: 4rem 0; border-radius: 0 0 2rem 2rem; margin-bottom: 2rem; }
+            .logo-container { background-color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); margin-top: 2rem; transition: transform 0.3s; }
+            .logo-container:hover { transform: translateY(-5px); }
+            .feature-card { border: none; border-radius: 1rem; padding: 1.5rem; height: 100%; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); transition: all 0.3s; }
+            .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+            .azure-icon { color: #0078D4; font-size: 2.5rem; margin-bottom: 1rem; }
+            footer { background-color: #f8f9fa; padding: 2rem 0; margin-top: 3rem; }
         </style>
     </head>
     <body>
-        <!-- Navigation -->
         <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0078D4;">
             <div class="container">
                 <a class="navbar-brand fw-bold" href="#">Azure App Service</a>
@@ -80,32 +46,20 @@ def home():
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Services</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Contact</a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Services</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
                     </ul>
                 </div>
             </div>
         </nav>
-
-        <!-- Hero Section -->
         <section class="hero-section">
             <div class="container text-center">
                 <h1 class="display-4 fw-bold">Hello from Azure!</h1>
                 <p class="lead">Welcome to your scalable web app hosted on Azure App Service.</p>
             </div>
         </section>
-
-        <!-- Logo Section -->
         <section class="container mb-5">
             <div class="row justify-content-center">
                 <div class="col-md-6 text-center">
@@ -116,8 +70,6 @@ def home():
                 </div>
             </div>
         </section>
-
-        <!-- Features Section -->
         <section class="container mb-5">
             <h2 class="text-center mb-4">Azure Platform Features</h2>
             <div class="row g-4">
@@ -157,8 +109,6 @@ def home():
                 </div>
             </div>
         </section>
-
-        <!-- Call to Action -->
         <section class="container">
             <div class="row">
                 <div class="col-lg-8 mx-auto">
@@ -170,20 +120,15 @@ def home():
                 </div>
             </div>
         </section>
-
-        <!-- Footer -->
         <footer>
             <div class="container text-center">
                 <p class="mb-0">© 2025 Azure Web App. Powered by Azure App Service.</p>
             </div>
         </footer>
-
-        <!-- Bootstrap JS Bundle with Popper -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
     </html>
     """
-    
     return render_template_string(html, image_url=image_url)
 
 if __name__ == '__main__':
